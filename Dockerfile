@@ -6,4 +6,4 @@ ADD *.py /
 
 WORKDIR /
 
-ENTRYPOINT ["/cli.py"]
+ENTRYPOINT ["python cli.py"]
