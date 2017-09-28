@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import json
-import urllib2
+import requests
 
 
 class DockerRegistryAPIDisc(object):
@@ -101,18 +101,16 @@ class DockerRegistryContact(object):
 
         url = self._url_prefix + DockerRegistryAPIDisc.api_disc_list_repositories()['uri']
 
-        req = urllib2.Request(url=url)
         try:
-            f = urllib2.urlopen(req)
+            r = requests.get(url=url)
 
-            result = f.read().encode('utf-8')
-            result = result.replace('\n', '').replace(' ', '')
-            result = dict(json.loads(result))
+            content = r.content.encode('utf-8')
+            content = dict(json.loads(content))
 
-            if 'errors' in result:
-                self._last_error = result['errors']
+            if r.status_code != 200:
+                self._last_error = content['errors']
             else:
-                repositories = result['repositories']
+                repositories = content['repositories']
         except Exception as exp:
             self._last_error = exp
 
@@ -130,18 +128,16 @@ class DockerRegistryContact(object):
         url = self._url_prefix + DockerRegistryAPIDisc.api_disc_list_image_tags()['uri']
         url = url.format(name=image_name)
 
-        req = urllib2.Request(url=url)
-
         try:
-            f = urllib2.urlopen(req)
+            r = requests.get(url=url)
 
-            result = f.read().encode('utf-8')
-            result = result.replace('\n', '').replace(' ', '')
-            result = dict(json.loads(result))
-            if 'errors' in result:
-                self._last_error = result['errors']
+            content = r.content.encode('utf-8')
+            content = dict(json.loads(content))
+
+            if r.status_code != 200:
+                self._last_error = content['errors']
             else:
-                tags = result['tags']
+                tags = content['tags']
         except Exception as exp:
             self._last_error = exp
 
