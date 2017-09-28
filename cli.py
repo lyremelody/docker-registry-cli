@@ -55,15 +55,21 @@ class DockerRegistryCmd(cmd.Cmd):
 
     def do_lsrepos(self, line):
         repo_names = self._docker_registry_contact.list_repositories()
-        for repo_name in repo_names:
-            print repo_name
+        if repo_names is None:
+            print self._docker_registry_contact.get_last_error()
+        else:
+            for repo_name in repo_names:
+                print repo_name
 
     def do_lstags(self, line):
         repository_name = raw_input('Repository Name: ')
 
         tags = self._docker_registry_contact.list_image_tags(repository_name)
-        for tag in tags:
-            print tag
+        if tags is None:
+            print self._docker_registry_contact.get_last_error()
+        else:
+            for tag in tags:
+                print tag
 
     def do_exit(self, line):
         return True

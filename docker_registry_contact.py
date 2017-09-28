@@ -74,39 +74,75 @@ class DockerRegistryContact(object):
         self._host = None
         self._port = None
         self._url_prefix = None
+        self._last_error = None
 
     def connect(self, host, port):
         self._host = host
         self._port = port
         self._url_prefix = 'http://{0}:{1}'.format(self._host, self._port)
 
+    def get_last_error(self):
+        return self._last_error
+
+    def _init_vars(self):
+        self._last_error = None
+
     def version_check(self):
+        self._init_vars()
         pass
 
     def list_repositories(self):
         """
             
-        :return: [<repo_name>, ...]
+        :return: [<repo_name>, ...] or None for error occurred
         """
+        self._init_vars()
+        repositories = None
+
         url = self._url_prefix + DockerRegistryAPIDisc.api_disc_list_repositories()['uri']
+
         req = urllib2.Request(url=url)
-        f = urllib2.urlopen(req)
-        result = f.read().encode('utf-8')
-        result = result.replace('\n', '').replace(' ', '')
-        result = dict(json.loads(result))
-        return result['repositories']
+        try:
+            f = urllib2.urlopen(req)
+
+            result = f.read().encode('utf-8')
+            result = result.replace('\n', '').replace(' ', '')
+            result = dict(json.loads(result))
+
+            if 'errors' in result:
+                self._last_error = result['errors']
+            else:
+                repositories = result['repositories']
+        except Exception as exp:
+            self._last_error = exp
+
+        return repositories
 
     def list_image_tags(self, image_name):
         """
         :param image_name: 
         
-        :return: [<tag>, ...]
+        :return: [<tag>, ...] or None for error occurred
         """
+        self._init_vars()
+        tags = None
+
         url = self._url_prefix + DockerRegistryAPIDisc.api_disc_list_image_tags()['uri']
         url = url.format(name=image_name)
+
         req = urllib2.Request(url=url)
-        f = urllib2.urlopen(req)
-        result = f.read().encode('utf-8')
-        result = result.replace('\n', '').replace(' ', '')
-        result = dict(json.loads(result))
-        return result['tags']
+
+        try:
+            f = urllib2.urlopen(req)
+
+            result = f.read().encode('utf-8')
+            result = result.replace('\n', '').replace(' ', '')
+            result = dict(json.loads(result))
+            if 'errors' in result:
+                self._last_error = result['errors']
+            else:
+                tags = result['tags']
+        except Exception as exp:
+            self._last_error = exp
+
+        return tags
