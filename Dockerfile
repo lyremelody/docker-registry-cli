@@ -6,4 +6,4 @@ ADD *.py /
 
 WORKDIR /
 
-ENTRYPOINT ["python cli.py"]
+CMD python cli.py
